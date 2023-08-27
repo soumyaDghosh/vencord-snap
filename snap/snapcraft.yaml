@@ -1,0 +1,68 @@
+name: vencord
+base: core22
+version: '0.3.0'
+summary: A Discord and Spacebar client implemented directly without Discord API
+description: |
+  A Discord and Spacebar client implemented directly without Discord API. Made in poland with the Electron framework.
+
+license: MIT
+issues: https://github.com/soumyaDghosh/webcord-snap/issues
+source-code: https://github.com/SpacingBat3/WebCord
+website: https://github.com/soumyaDghosh/webcord-snap
+contact: soumyadeepghosh2004@zohomail.in
+grade: stable
+confinement: strict
+compression: lzo
+architectures:
+  - build-on: amd64
+
+parts:
+  launcher:
+    source: launcher
+    plugin: dump
+    override-build: |
+      cp launcher $CRAFT_PART_INSTALL/
+  webcord:
+    plugin: dump
+    source: https://github.com/Vencord/Vesktop/releases/download/v$SNAPCRAFT_PROJECT_VERSION/VencordDesktop_$SNAPCRAFT_PROJECT_VERSION_$CRAFT_TARGET_ARCH.deb
+    override-build: |
+      craftctl default
+      rm $CRAFT_PART_INSTALL/opt/Vesktop/chrome-sandbox
+      sed -i 's|Icon=vencorddesktop|Icon=usr/share/icons/hicolor/0x0/apps/vencorddesktop.png|' $CRAFT_PART_INSTALL/usr/share/applications/vencorddesktop.desktop
+
+  deps:
+    plugin: nil
+    stage-packages:
+      - libpipewire-0.3-modules
+      - libspa-0.2-modules
+      - libpipewire-0.3-0
+      - libwebrtc-audio-processing1
+      - pipewire-bin
+
+
+plugs:
+  shmem:
+    interface: shared-memory
+    private: true
+
+apps:
+  webcord:
+    command: launcher
+    desktop: usr/share/applications/vencorddesktop.desktop
+    autostart: vencorddesktop.desktop
+    environment:
+      TMPDIR: $XDG_RUNTIME_DIR
+      GTK_USE_PORTAL: 1
+      PIPEWIRE_CONFIG_NAME: "$SNAP/usr/share/pipewire/pipewire.conf"
+      PIPEWIRE_MODULE_DIR: "$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/pipewire-0.3"
+      SPA_PLUGIN_DIR: "$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/spa-0.2"
+    extensions: [ gnome ]
+    plugs:
+      - password-manager-service
+      - audio-playback
+      - audio-record
+      - camera
+      - network
+      - opengl
+      - shmem
+      - unity7
